@@ -61,11 +61,18 @@ void setup() {
 void loop() {
   if (Serial2.available() > 0) {
     mensagem = Serial2.readStringUntil('\n');
+    mensagem.trim();  // Remove espaços em branco no início e no final
+
     Serial.println("Mensagem recebida: " + mensagem);
+    
     for (int i = 0; i < maxBarcodes; ++i) {
       Serial.println(barcodes[i]);
       Serial.println(barcodes[0]);
-      if(mensagem == barcodes[0]) {
+
+      // Limpa a string antes de comparar
+      barcodes[i].trim();
+
+      if (mensagem.equals(barcodes[i])) {
         Serial.println("ok barcode");
         digitalWrite(triggerPin, HIGH);
         delay(1000);
@@ -74,5 +81,5 @@ void loop() {
       }
     }
   }
-
 }
+
