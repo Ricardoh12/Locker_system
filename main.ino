@@ -64,7 +64,8 @@ void loop() {
     Serial.println("Mensagem recebida: " + mensagem);
     for (int i = 0; i < maxBarcodes; ++i) {
       Serial.println(barcodes[i]);
-      if (mensagem.equalsIgnoreCase(barcodes[i])) {
+      Serial.println(barcodes[0]);
+      if(mensagem == barcodes[0]) {
         Serial.println("ok barcode");
         digitalWrite(triggerPin, HIGH);
         delay(1000);
