@@ -1,21 +1,79 @@
-//Conexão esp32*****************************************
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-const char *ssid = "Vila Sul Residence";
-const char *password = "residenz62";
-//******************************************************
+const char *ssid = "RWIFI";
+const char *password = "r@b@tic@";
+StaticJsonDocument<200> doc;
+int triggerPin = 5;
 
+const int maxBarcodes = 10;
+String barcodes[maxBarcodes];
+String mensagem;
 
 void setup() {
-  Serial.begin(9600); // Inicia a comunicação serial a 9600 bps
+  Serial.begin(9600);
   Serial2.begin(9600, SERIAL_8N1, 33, 32);
-  connect();
-  makeRequest();
 
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Conectando ao WiFi...");
+  }
+  Serial.println("Conectado ao WiFi");
+
+  HTTPClient http;
+  String url = "https://dartapi3.onrender.com/dados";
+
+  Serial.print("Conectando a: ");
+  Serial.println(url);
+
+  http.begin(url);
+  int httpCode = http.GET();
+
+  if (httpCode > 0) {
+    String payload = http.getString();
+    Serial.println("Resposta da API:");
+    Serial.println(payload);
+
+    const size_t capacity = JSON_ARRAY_SIZE(maxBarcodes) + maxBarcodes * JSON_OBJECT_SIZE(2) + 800;
+    DynamicJsonDocument doc(capacity);
+    deserializeJson(doc, payload);
+
+    // Itera sobre os objetos no JSON
+    for (int i = 0; i < maxBarcodes; ++i) {
+      if (doc[i].containsKey("bars_code")) {
+        barcodes[i] = doc[i]["bars_code"].as<String>();
+        Serial.print("Bars Code ");
+        Serial.print(i + 1);
+        Serial.print(": ");
+        Serial.println(barcodes[i]);
+      }
+    }
+  } else {
+    Serial.print("Erro na requisição HTTP. Código de erro: ");
+    Serial.println(httpCode);
+  }
+
+  http.end();
 }
 
 void loop() {
-  leitura_serial_codigo();
+  if (Serial2.available() > 0) {
+    mensagem = Serial2.readStringUntil('\n');
+    Serial.println("Mensagem recebida: " + mensagem);
+
+    // Itera sobre os códigos de barras
+    for (int i = 0; i < maxBarcodes; ++i) {
+      if (mensagem.equalsIgnoreCase(barcodes[i])) {
+        Serial.println("ok barcode");
+        digitalWrite(triggerPin, HIGH);
+        delay(1000);
+        digitalWrite(triggerPin, LOW);
+        break; 
+      }
+    }
+  }
+
+  
 }
