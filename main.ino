@@ -62,9 +62,8 @@ void loop() {
   if (Serial2.available() > 0) {
     mensagem = Serial2.readStringUntil('\n');
     Serial.println("Mensagem recebida: " + mensagem);
-
-    // Itera sobre os códigos de barras
     for (int i = 0; i < maxBarcodes; ++i) {
+      Serial.println(barcodes[i]);
       if (mensagem.equalsIgnoreCase(barcodes[i])) {
         Serial.println("ok barcode");
         digitalWrite(triggerPin, HIGH);
