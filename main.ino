@@ -70,10 +70,9 @@ void loop() {
         digitalWrite(triggerPin, HIGH);
         delay(1000);
         digitalWrite(triggerPin, LOW);
-        break; 
+        break; // Se encontrou uma correspondência, interrompe o loop
       }
     }
   }
 
-  
 }
